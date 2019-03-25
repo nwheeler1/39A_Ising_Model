@@ -1,6 +1,5 @@
 import random
 import math as m
-import numpy as np
 
 #Initializes spins to either all parallel or randomly +-1
 def createSpins(numSpins, parallel):
@@ -14,8 +13,8 @@ def createSpins(numSpins, parallel):
 #Chooses random spin to flip and calculates whether it does or not.
 #If change in energy is negative, flips. If not, flips with probability
 #e^(-beta*delE). Does this for the specified number of times.
-def flipSpins(spins, numTrials, measureAt, beta, J):
-	energy = 0
+def flipSpins(spins, numTrials, equilibrium, beta, J):
+	energyVals = []
 	for x in range(0, numTrials):
 		index = random.randint(0, len(spins)-1)
 
@@ -40,6 +39,8 @@ def flipSpins(spins, numTrials, measureAt, beta, J):
 				spins[index] = -spins[index]
 			else:
 				spins[index] = (-spins[index] if(random.uniform(0,1) <= m.pow(m.e, (-beta*J*2))) else spins[index])
+		if(x < equilibrium and x % int((numTrials-equilibrium/20)):
+			energyVals.append(calculateEnergy(spins))
 
 #Calculates the dimensionless energy per spin.
 def calculateEnergy(spins):
@@ -55,13 +56,13 @@ def calculateMagnetization(spins):
 
 
 #Runs the Monte Carlo algorithm as outlined in Sec. 5.5.3.
-def OneD_Monte_Carlo(parallel, numSpins, numTrials, measureAt, beta, J):
+def OneD_Monte_Carlo(parallel, numSpins, numTrials, equilibrium, beta, J):
 
 	spins = createSpins(numSpins, parallel)
 
 	print(spins)
 
-	flipSpins(spins, numTrials, measureAt, beta, J)
+	flipSpins(spins, numTrials, equilibrium, beta, J)
 
 	print(spins)
 
