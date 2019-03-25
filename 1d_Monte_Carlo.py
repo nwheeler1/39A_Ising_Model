@@ -39,7 +39,18 @@ def flipSpins(spins, numTrials, beta, J):
 			else:
 				spins[index] = (-spins[index] if(random.uniform(0,1) <= m.pow(m.e, (-beta*J*2))) else spins[index])
 
-#Runs the Monte Carlo algorithm as outlined in Sec. 5.5.3
+#Calculates the dimensionless energy per spin.random
+def calculateEnergy(spins):
+	N = len(spins)
+	energy = 0
+	for x in range(0, N-1):
+		energy += -spins[x]*spins[x+1]
+	return energy
+
+
+
+
+#Runs the Monte Carlo algorithm as outlined in Sec. 5.5.3.
 def OneD_Monte_Carlo(parallel, numSpins, numTrials, beta, J):
 
 	spins = createSpins(numSpins, parallel)
@@ -49,6 +60,13 @@ def OneD_Monte_Carlo(parallel, numSpins, numTrials, beta, J):
 	flipSpins(spins, numTrials, beta, J)
 
 	print(spins)
+
+	energy = calculateEnergy(spins)
+
+	print(energy)
+
+	
+
 
 #Prints initial and final lists of spins
 
