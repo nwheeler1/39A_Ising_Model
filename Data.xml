@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object class="org.opensourcephysics.display.InteractivePanel">
+    <property name="preferred x min" type="double">-2.0</property>
+    <property name="preferred x max" type="double">66.0</property>
+    <property name="preferred y min" type="double">-2.0</property>
+    <property name="preferred y max" type="double">3.0</property>
+    <property name="autoscale x" type="boolean">false</property>
+    <property name="autoscale y" type="boolean">false</property>
+    <property name="square aspect" type="boolean">true</property>
+    <property name="drawables" type="collection" class="java.util.ArrayList">
+        <property name="item" type="object">
+        <object class="org.opensourcephysics.stp.ising.ising1d.Ising1D"/>
+        </property>
+    </property>
+</object>

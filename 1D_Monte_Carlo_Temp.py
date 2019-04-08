@@ -23,8 +23,8 @@ def flipSpins(spins, numTrials, equilibrium, beta, magField, J):
 		if(energyChange <= 0):
 			spins[index] = -spins[index]
 		else:
-			spins[index] = -spins[index] if (r.uniform(0,1) <= m.pow(m.e, (-beta*J*2))) else spins[index]
-	return calculateMagnetization(energyVals), calculateMagnetization(magnetizationVals)
+			spins[index] = -spins[index] if (r.uniform(0,1) <= m.pow(m.e, (-beta*J*2*energyChange))) else spins[index]
+	return energyVals, magnetizationVals
 
 def writeToSheet(sheet, list, startRow, column):
 	for x in list:
@@ -37,7 +37,7 @@ def calculateEnergy(spins, magField):
 	energy = 0
 	for x in range(0, N-1):
 		energy += -spins[x]*spins[x+1] - magField*spins[x]
-	return energy
+	return energy/len(spins)
 
 def calculateMagnetization(spins):
 	return sum(spins)/len(spins)
@@ -45,11 +45,29 @@ def calculateMagnetization(spins):
 
 energyVals = []
 magnetizationVals = []
-tempList = np.linspace(0.5, 3, 6)
+tempList = np.linspace(0.001, 0.1, 100)
 for temp in tempList:
-	energy, magnetization = flipSpins(createSpins(50, False), 10000000, 2000000, 1/temp, 0, 1)
+	energy, magnetization = flipSpins(createSpins(20, False), 10000, 2000, 1/temp, 0, 1)
 	energyVals.append(energy)
 	magnetizationVals.append(magnetization)
+
+heatCapacities = []
+
+for e in range(len(tempList)):
+	mu2 = calculateMagnetization(energyVals[e])
+	mu2 = mu2*mu2
+	temp = [x*x for x in energyVals[e]]
+	mu = calculateMagnetization(temp)
+	heatCapacities.append(1/(tempList[e]*tempList[e])*(mu-mu2))
+
+print(heatCapacities)
+
+
+
+
+
+
+
 
 workbook = xlsxwriter.Workbook('Test.xlsx')
 worksheet = workbook.add_worksheet()
