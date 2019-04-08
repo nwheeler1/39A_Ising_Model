@@ -2,6 +2,10 @@ import random as r
 import math as m
 import numpy as np
 import xlsxwriter
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib as mpl
+from matplotlib import cm
 
 #Initializes spins to either all parallel or randomly +-1
 def createSpins(numSpins, parallel):
@@ -43,28 +47,55 @@ def calculateMagnetization(spins):
 	return sum(spins)/len(spins)
 
 
-energyVals = []
+energyVals = [[0]*20]*20
 magnetizationVals = []
-tempList = np.linspace(1, 1, 1)
-for temp in tempList:
-	energy, magnetization = flipSpins(createSpins(64, True), 5000, 2000, 1/(temp), 0, 1)
-	print(calculateMagnetization(energy))
-	energyVals.append(energy)
-	magnetizationVals.append(magnetization)
+tempList = np.linspace(0.5, 10, 20)
+temptempList = np.linspace(-4, 4, 20)
+for x in range(len(tempList)):
+	for y in range(len(temptempList)):
+		energy, magnetization = flipSpins(createSpins(64, False), 2000, 1000, 1/(tempList[x]), temptempList[y], 1)
+		energyVals[y][x] = energy
+		magnetizationVals.append(magnetization)
 
 heatCapacities = []
 
-for e in range(len(tempList)):
-	mu2 = calculateMagnetization(energyVals[e])
-	mu2 = mu2*mu2
-	temp = [x*x for x in energyVals[e]]
-	mu = calculateMagnetization(temp)
-	heatCapacities.append(1/(tempList[e]*tempList[e])*(mu-mu2))
-
-print(heatCapacities)
+# for e in range(len(tempList)):
+# 	mu2 = calculateMagnetization(energyVals[e])
+# 	mu2 = mu2*mu2
+# 	temp = [x*x for x in energyVals[e]]
+# 	mu = calculateMagnetization(temp)
+# 	heatCapacities.append(1/(tempList[e]*tempList[e])*(mu-mu2))
 
 
+# susceptibilities = []
 
+# for e in range(len(tempList)):
+# 	mu2 = calculateMagnetization(magnetizationVals[e])
+# 	mu2 = mu2*mu2
+# 	temp = [x*x for x in magnetizationVals[e]]
+# 	mu = calculateMagnetization(temp)
+# 	susceptibilities.append(1/(tempList[e])*(mu-mu2))
+Z = [[0]*20]*20
+for x in range(20):
+	for y in range(20):
+		Z[x][y] = calculateMagnetization(energyVals[x][y])
+
+
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+X,Y = np.meshgrid(tempList, temptempList)
+urf = ax.plot_surface(X, Y, np.array(Z), cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+
+plt.show()
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# z = energyAve
+# y = temptempList
+# x = tempList
+# ax.plot(x,y,z)
+
+# plt.show()
 
 
 
