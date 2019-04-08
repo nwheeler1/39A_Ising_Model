@@ -16,14 +16,14 @@ def flipSpins(spins, numTrials, equilibrium, beta, magField, J):
 	magnetizationVals = []
 	for i in range(0, numTrials):
 		index = r.randint(0, len(spins) - 1)
-		if(i >= equilibrium and (i - equilibrium) % int((numTrials - equilibrium)/20) == 0):
+		if(i >= equilibrium):
 			energyVals.append(calculateEnergy(spins, magField))
 			magnetizationVals.append(calculateMagnetization(spins))
-		energyChange = -J*((2*spins[(index-1) % len(spins)] + 2*spins[(index + 1) % len(spins)]) * spins[index]) - magField*2*spins[index]
+		energyChange = J*((2*spins[(index-1) % len(spins)] + 2*spins[(index + 1) % len(spins)]) * spins[index]) - magField*2*spins[index]
 		if(energyChange <= 0):
 			spins[index] = -spins[index]
 		else:
-			spins[index] = -spins[index] if (r.uniform(0,1) <= m.pow(m.e, (-beta*J*2*energyChange))) else spins[index]
+			spins[index] = -spins[index] if (r.uniform(0,1) <= m.pow(m.e, (-beta*energyChange))) else spins[index]
 	return energyVals, magnetizationVals
 
 def writeToSheet(sheet, list, startRow, column):
@@ -35,9 +35,9 @@ def writeToSheet(sheet, list, startRow, column):
 def calculateEnergy(spins, magField):
 	N = len(spins)
 	energy = 0
-	for x in range(0, N-1):
-		energy += -spins[x]*spins[x+1] - magField*spins[x]
-	return energy/len(spins)
+	for x in range(0, N):
+		energy += -spins[x]*spins[(x+1)%N] - magField*spins[x]
+	return energy/N
 
 def calculateMagnetization(spins):
 	return sum(spins)/len(spins)
@@ -45,9 +45,10 @@ def calculateMagnetization(spins):
 
 energyVals = []
 magnetizationVals = []
-tempList = np.linspace(0.001, 0.1, 100)
+tempList = np.linspace(1, 1, 1)
 for temp in tempList:
-	energy, magnetization = flipSpins(createSpins(20, False), 10000, 2000, 1/temp, 0, 1)
+	energy, magnetization = flipSpins(createSpins(64, True), 5000, 2000, 1/(temp), 0, 1)
+	print(calculateMagnetization(energy))
 	energyVals.append(energy)
 	magnetizationVals.append(magnetization)
 
@@ -69,11 +70,11 @@ print(heatCapacities)
 
 
 
-workbook = xlsxwriter.Workbook('Test.xlsx')
-worksheet = workbook.add_worksheet()
+# workbook = xlsxwriter.Workbook('Test.xlsx')
+# worksheet = workbook.add_worksheet()
 
-writeToSheet(worksheet, tempList, 0, 0)
-writeToSheet(worksheet, energyVals, 0, 1)
-writeToSheet(worksheet, magnetizationVals, 0, 2)
+# writeToSheet(worksheet, tempList, 0, 0)
+# writeToSheet(worksheet, energyVals, 0, 1)
+# writeToSheet(worksheet, magnetizationVals, 0, 2)
 
-workbook.close()
+# workbook.close()
