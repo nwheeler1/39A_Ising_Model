@@ -64,8 +64,8 @@ for e in range(len(energyVals)):
 	mu2 = mu2*mu2
 	temp = [x*x for x in energyVals[e]]
 	mu = calculateMagnetization(temp)
-	print(calculateMagnetization(energyVals[e]))
 	heatCapacities.append((1/(tempList[int(e/20)]*tempList[int(e/20)]))*(mu-mu2))
+	print(heatCapacities[e])
 
 
 # susceptibilities = []
@@ -76,7 +76,7 @@ for e in range(len(energyVals)):
 # 	temp = [x*x for x in magnetizationVals[e]]
 # 	mu = calculateMagnetization(temp)
 # 	susceptibilities.append(1/(tempList[e])*(mu-mu2))
-# Z = [calculateMagnetization(x) for x in heatCapacities]
+# Z = [calculateMagnetization(x) for x in energyVals]
 
 
 fig = plt.figure()
