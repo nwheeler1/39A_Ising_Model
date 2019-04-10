@@ -13,7 +13,7 @@ def createSpins(numSpins, parallel):
 		spins = [1]*numSpins
 	else:
 		spins = [r.randint(0, 1)*2 - 1 for x in range(0,numSpins)]
-	return spins
+	return spins.copy()
 
 def flipSpins(spins, numTrials, equilibrium, beta, magField, J):
 	energyVals = []
@@ -28,7 +28,7 @@ def flipSpins(spins, numTrials, equilibrium, beta, magField, J):
 			spins[index] = -spins[index]
 		else:
 			spins[index] = -spins[index] if (r.uniform(0,1) <= m.pow(m.e, (-beta*energyChange))) else spins[index]
-	return energyVals, magnetizationVals
+	return energyVals.copy(), magnetizationVals.copy()
 
 def writeToSheet(sheet, list, startRow, column):
 	for x in list:
@@ -47,17 +47,17 @@ def calculateMagnetization(spins):
 	return sum(spins)/len(spins)
 
 
-energyVals = [[0]*20]*20
+energyVals = []
 magnetizationVals = []
-tempList = np.linspace(0.5, 10, 20)
-temptempList = np.linspace(-4, 4, 20)
-for x in range(len(tempList)):
-	for y in range(len(temptempList)):
-		energy, magnetization = flipSpins(createSpins(64, False), 2000, 1000, 1/(tempList[x]), temptempList[y], 1)
-		energyVals[y][x] = energy
+tempList = np.linspace(0.1, 2, 20)
+temptempList = np.linspace(-2, 2, 20)
+for x in range(len(temptempList)):
+	for y in range(len(tempList)):
+		energy, magnetization = flipSpins(createSpins(64, False), 2000, 1000, 1/(tempList[y]), temptempList[x], 1)
+		energyVals.append(energy.copy())
 		magnetizationVals.append(magnetization)
 
-heatCapacities = []
+# heatCapacities = []
 
 # for e in range(len(tempList)):
 # 	mu2 = calculateMagnetization(energyVals[e])
@@ -75,16 +75,13 @@ heatCapacities = []
 # 	temp = [x*x for x in magnetizationVals[e]]
 # 	mu = calculateMagnetization(temp)
 # 	susceptibilities.append(1/(tempList[e])*(mu-mu2))
-Z = [[0]*20]*20
-for x in range(20):
-	for y in range(20):
-		Z[x][y] = calculateMagnetization(energyVals[x][y])
+Z = [calculateMagnetization(x) for x in energyVals]
 
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
 X,Y = np.meshgrid(tempList, temptempList)
-urf = ax.plot_surface(X, Y, np.array(Z), cmap=cm.coolwarm,
+urf = ax.plot_surface(X, Y, np.reshape(np.array(Z), (20, 20)), cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
 
 plt.show()
