@@ -49,22 +49,23 @@ def calculateMagnetization(spins):
 
 energyVals = []
 magnetizationVals = []
-tempList = np.linspace(0.1, 2, 20)
-temptempList = np.linspace(-2, 2, 20)
+tempList = np.linspace(0.2, 4, 20)
+temptempList = np.linspace(-4, 4, 20)
 for x in range(len(temptempList)):
 	for y in range(len(tempList)):
-		energy, magnetization = flipSpins(createSpins(64, False), 2000, 1000, 1/(tempList[y]), temptempList[x], 1)
+		energy, magnetization = flipSpins(createSpins(64, False), 4000, 2000, 1/(tempList[y]), temptempList[x], 1)
 		energyVals.append(energy.copy())
-		magnetizationVals.append(magnetization)
+		magnetizationVals.append(magnetization.copy())
 
-# heatCapacities = []
+heatCapacities = []
 
-# for e in range(len(tempList)):
-# 	mu2 = calculateMagnetization(energyVals[e])
-# 	mu2 = mu2*mu2
-# 	temp = [x*x for x in energyVals[e]]
-# 	mu = calculateMagnetization(temp)
-# 	heatCapacities.append(1/(tempList[e]*tempList[e])*(mu-mu2))
+for e in range(len(energyVals)):
+	mu2 = calculateMagnetization(energyVals[e])
+	mu2 = mu2*mu2
+	temp = [x*x for x in energyVals[e]]
+	mu = calculateMagnetization(temp)
+	print(calculateMagnetization(energyVals[e]))
+	heatCapacities.append((1/(tempList[int(e/20)]*tempList[int(e/20)]))*(mu-mu2))
 
 
 # susceptibilities = []
@@ -75,13 +76,13 @@ for x in range(len(temptempList)):
 # 	temp = [x*x for x in magnetizationVals[e]]
 # 	mu = calculateMagnetization(temp)
 # 	susceptibilities.append(1/(tempList[e])*(mu-mu2))
-Z = [calculateMagnetization(x) for x in energyVals]
+# Z = [calculateMagnetization(x) for x in heatCapacities]
 
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
 X,Y = np.meshgrid(tempList, temptempList)
-urf = ax.plot_surface(X, Y, np.reshape(np.array(Z), (20, 20)), cmap=cm.coolwarm,
+urf = ax.plot_surface(X, Y, np.reshape(np.array(heatCapacities), (20, 20)), cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
 
 plt.show()
