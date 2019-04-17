@@ -3,7 +3,8 @@ import math as m
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from astropy.stats import jackknife_resampling
+from astropy.stats import jackknife_stats
 
 #Stores energy and magnetization lists
 eVals = []
@@ -14,9 +15,9 @@ mVals = []
 #of both the temps and the external magnetic fields (so the total number of
 #trials will be that number squared)
 parallel = False
-numSims = 40
+numSims = 80
 numSpins = 16
-trials = 300000
+trials = 50000
 startTemp = 0.1
 endTemp = 4
 
@@ -78,13 +79,13 @@ def calculateEnergy(spins):
 	return energy/len(spins)
 
 #Plots the given lists in 2d
-def plotVals(X, Y):
+def plotVals(X, Y, jackknifes):
 
 	#Initializes the plot
 	fig = plt.figure()
 
 	#Plots the values.
-	plt.plot(X, Y, 'bo')
+	plt.errorbar(np.array(X), np.array(Y), yerr=jackknifes, linestyle="None", fmt='-o')
 
 	#Shows the plot
 	plt.show()
@@ -105,22 +106,28 @@ for temp in temps:
 #Initializes heat capacity list
 heatCapacities = []
 
+jackknifes = []
+
 #Finds the heat capacity for each temperature and external magnetic field
 for i in range(numSims):
+
+	out = jackknife_stats(np.array(eVals[i]), np.var, 0.95)
+	heatCapacities.append(out[0]/(temps[i]*temps[i]))
+	jackknifes.append(out[2])
 	
-	#Finds the squared average of the energies
-	averageSquared = average(eVals[i])
-	averageSquared = averageSquared*averageSquared
+	# #Finds the squared average of the energies
+	# averageSquared = average(eVals[i])
+	# averageSquared = averageSquared*averageSquared
 
-	#Finds the average of the energies squared
-	squares = [x*x for x in eVals[i]]
-	squaredAverage = average(squares)
+	# #Finds the average of the energies squared
+	# squares = [x*x for x in eVals[i]]
+	# squaredAverage = average(squares)
 
-	#Finds the heat capacity
-	heatCapacity = (squaredAverage - averageSquared)/(temps[i] * temps[i])
+	# #Finds the heat capacity
+	# heatCapacity = (squaredAverage - averageSquared)/(temps[i] * temps[i])
 
-	#Appends to the heat capacities list
-	heatCapacities.append(heatCapacity)
+	# #Appends to the heat capacities list
+	# heatCapacities.append(heatCapacity)
 
 #Plots the graph
-plotVals(temps, heatCapacities)
+plotVals(temps, heatCapacities ,jackknifes)
