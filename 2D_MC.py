@@ -15,9 +15,9 @@ mVals = []
 #of both the temps and the external magnetic fields (so the total number of
 #trials will be that number squared)
 parallel = False
-numSims = 80
+numSims = 20
 numSpins = 16
-trials = 50000
+trials = 60000
 startTemp = 0.1
 endTemp = 4
 
@@ -42,15 +42,16 @@ def simulate(spins, trials, beta):
 
 		#Finds a random index in the list
 		i = r.randint(0, len(spins) - 1)
+		j = r.randint(0, len(spins) - 1)
 
 		#Finds the change in energy due to a flip
-		eChange = 2*(spins[(i-1)%numSpins] + spins[(i+1)%numSpins])*spins[i]
+		eChange = 2*(spins[(i-1)%numSpins][j] + spins[(i+1)%numSpins][j] + spins[i][(j-1)%numSpins] + spins[i][(j+1)%numSpins])*spins[i][j]
 
 		#Flips if energy change is negative, checks random value if positive
 		if(eChange <= 0):
-			spins[i] = -spins[i]
+			spins[i][j] = -spins[i][j]
 		else:
-			spins[i] = -spins[i] if (r.uniform(0,1) <= m.e**(-beta*eChange)) else spins[i]
+			spins[i][j] = -spins[i][j] if (r.uniform(0,1) <= m.e**(-beta*eChange)) else spins[i][j]
 
 		#Finds energy and magnetizations once equilibrium has been reached
 		if(x >= trials / 2):
@@ -69,13 +70,14 @@ def spinList(numSpins, parallel):
 
 #Finds the average of the input list
 def average(inList):
-	return sum(inList)/(float(len(inList)))
+	return np.sum(inList)/np.size(inList)
 
 #Finds the total energy of the given spin list
 def calculateEnergy(spins):
 	energy = 0
 	for x in range(len(spins)):
-		energy += -spins[x]*spins[(x+1)%len(spins)]
+		for y in range(len(spins)):
+			energy += -spins[x][y]*(spins[(x+1)%len(spins)][y] + spins[x][(y+1)%len(spins)])
 	return energy/len(spins)
 
 #Plots the given lists in 2d
