@@ -15,11 +15,11 @@ mVals = []
 #of both the temps and the external magnetic fields (so the total number of
 #trials will be that number squared)
 parallel = False
-numSims = 20
+numSims = 10
 numSpins = 16
 trials = 60000
-startTemp = 0.1
-endTemp = 4
+startTemp = 1.5
+endTemp = 3.5
 
 #Initializes time and external mag field arrays
 temps = np.linspace(startTemp, endTemp, numSims)
