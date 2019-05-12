@@ -13,14 +13,13 @@ import scipy.integrate
 #trials will be that number squared)
 parallel = True
 numSims = 20
-numSpins = 64
-trials = 1500000
+numSpins = 16
+trials = 2000000
 startTemp = 0.2
 endTemp = 4
 
 #Initializes time and external mag field arrays
 temps = np.linspace(startTemp, endTemp, numSims)
-temps2 = np.linspace(startTemp, endTemp, 10000)
 
 
 
@@ -30,9 +29,8 @@ temps2 = np.linspace(startTemp, endTemp, 10000)
 
 #Simulates the flips with the given inputs, the spin list, the number of trials,
 #the value of beta, and the strength of the external magnetic field.
-#Equilibrium is assumed to be achieved once half of the trials have completed.
+#Equilibrium is assumed to be achieved prior to the sampling
 def simulate(spins, trials, beta):
-	energies = []
 	magnetizations = []
 
 	#Tries to flips the specified number of times
@@ -51,13 +49,12 @@ def simulate(spins, trials, beta):
 		else:
 			spins[i][j] = -spins[i][j] if (r.uniform(0,1) <= m.e**(-beta*eChange)) else spins[i][j]
 
-		#Finds energy and magnetizations once equilibrium has been reached
-		if(x >=trials - 10000):
-			energies.append(calculateEnergy(spins))
+		#Finds magnetization once equilibrium has been reached
+		if(x >=trials - 15000):
 			magnetizations.append(average(spins))
 
-	#The values of each after equilibrium
-	return energies, magnetizations
+	#The values of the magnetization after equilibrium
+	return magnetizations
 
 #Creates a list of spins with the given spins and parallelization
 def spinList(numSpins, parallel):
@@ -79,78 +76,42 @@ def calculateEnergy(spins):
 	return energy/len(spins)
 
 #Plots the given lists in 2d
-def plotVals(X, Y, jackknifes, X2, Y2):
+def plotVals(X, Y, jackknifes):
 
 	#Initializes the plot
 	fig = plt.figure()
 
 	#Plots the values.
 	plt.errorbar(np.array(X), np.array(Y), yerr=jackknifes)
-	plt.plot(X2, Y2)
 	plt.xlabel('Temperature')
-	plt.ylabel('Magnetization')
+	plt.ylabel('Susceptibility')
 
 	#Shows the plot
 	plt.show()
 
-heatout = []
 
 
-for _ in range(1):
+#Initializes susceptibilities list
+susceptibilities = []
 
-	#Stores energy and magnetization lists
-	eVals = []
-	mVals = []
+jackknifes = []
 
-	#Initializes heat capacity list
-	heatCapacities = []
+i=1
 
-	jackknifes = []
+#Calculates the susceptibility lists for each temp
+for temp in temps:
+	spins = spinList(numSpins, parallel)
+	beta = 1/temp
 
-	i=1
+	#Does a Monte-Carlo simulation as outlined in the assignment
+	magnetization = simulate(spins, trials, beta)
+	out = jackknife_stats(np.array(magnetization), np.var, 0.95)
+	susceptibilities.append(out[0])
+	jackknifes.append(out[2])
 
-	#Calculates the energy and magnetization lists for each time and mag field
-	for temp in temps:
-		spins = spinList(numSpins, parallel)
-		beta = 1/temp
-
-		#Does a Monte-Carlo simulation as outlined in the assignment
-		energy, magnetization = simulate(spins, trials, beta)
-		print("test")
-		out = jackknife_stats(np.array(magnetization), np.mean, 0.95)
-		heatCapacities.append(abs(out[0]))
-		print(out[0])
-		jackknifes.append(out[2])
-		print(i)
-		i += 1
-	heatout.append(heatCapacities)
+	#Flagpoint
+	print(i)
+	i += 1
 
 
-	# #Finds the squared average of the energies
-	# averageSquared = average(eVals[i])
-	# averageSquared = averageSquared*averageSquared
-
-	# #Finds the average of the energies squared
-	# squares = [x*x for x in eVals[i]]
-	# squaredAverage = average(squares)
-
-	# #Finds the heat capacity
-	# heatCapacity = (squaredAverage - averageSquared)/(temps[i] * temps[i])
-
-	# #Appends to the heat capacities list
-	# heatCapacities.append(heatCapacity)
-
-#Plots the graph
-
-theoretical = []
-
-for temp in temps2:
-	x = -2*m.tanh(2/temp)
-	k=2*m.tanh(2/temp)/m.cosh(2/temp)
-	I1 = scipy.integrate.quad(lambda y: 1/m.sqrt(1-(k**2)*(m.sin(y)**2)), 0, m.pi/2)[0]
-	I2 = scipy.integrate.quad(lambda y: m.sqrt(1-(k**2)*(m.sin(y)**2)), 0, m.pi/2)[0]
-	x = 0 if temp > 2.269 else (1-(m.sinh(2/temp)**(-4)))**(1/8)
-	theoretical.append(x)
-
-out = [sum(e)/len(e) for e in zip(*heatout)]
-plotVals(temps, out, jackknifes, temps2, theoretical)
+plotVals(temps, susceptibilities, jackknifes)

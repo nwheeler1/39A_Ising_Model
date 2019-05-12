@@ -12,8 +12,8 @@ from astropy.stats import jackknife_stats
 #trials will be that number squared)
 parallel = False
 numSims = 20
-numSpins = 32
-trials = 500000
+numSpins = 100
+trials = 2000000
 startTemp = 0.1
 endTemp = 4
 
@@ -29,10 +29,9 @@ temps2 = np.linspace(startTemp, endTemp, 1000)
 
 #Simulates the flips with the given inputs, the spin list, the number of trials,
 #the value of beta, and the strength of the external magnetic field.
-#Equilibrium is assumed to be achieved once half of the trials have completed.
+#Equilibrium is assumed to be achieved prior to the sampling.
 def simulate(spins, trials, beta):
 	energies = []
-	magnetizations = []
 
 	#Tries to flips the specified number of times
 	for x in range(trials):
@@ -49,13 +48,12 @@ def simulate(spins, trials, beta):
 		else:
 			spins[i] = -spins[i] if (r.uniform(0,1) <= m.e**(-beta*eChange)) else spins[i]
 
-		#Finds energy and magnetizations once equilibrium has been reached
-		if(x >= trials - 10000):
+		#Finds the energy once equilibrium has been reached
+		if(x >= trials - 30000):
 			energies.append(calculateEnergy(spins))
-			magnetizations.append(average(spins))
 
-	#The values of each after equilibrium
-	return energies, magnetizations
+	#The values of the energy after equilibrium
+	return energies
 
 #Creates a list of spins with the given spins and parallelization
 def spinList(numSpins, parallel):
@@ -82,9 +80,9 @@ def plotVals(X, Y, jackknifes, X2, Y2):
 	fig = plt.figure()
 
 	#Plots the values.
-	plt.errorbar(np.array(X), np.array(Y), yerr=jackknifes, linestyle="None", fmt='-o')
+	plt.errorbar(np.array(X), np.array(Y), yerr=jackknifes, fmt='-o')
 	plt.xlabel('Temperature')
-	plt.ylabel('Energy')
+	plt.ylabel('Heat Capacity')
 	plt.plot(X2, Y2)
 
 	#Shows the plot
@@ -93,46 +91,35 @@ def plotVals(X, Y, jackknifes, X2, Y2):
 #Initializes heat capacity list
 heatCapacities = []
 
+#Initializes error list
 jackknifes = []
 
 
 i = 1
-#Calculates the energy and magnetization lists for each time and mag field
+#Calculates the heat capacity for each temp
 for temp in temps:
 	spins = spinList(numSpins, parallel)
 	beta = 1/temp
 
 	#Does a Monte-Carlo simulation as outlined in the assignment
-	energy, magnetization = simulate(spins, trials, beta)
+	energy = simulate(spins, trials, beta)
 
+	#Finds the error on the measurement and the heat capacity
 	out = jackknife_stats(np.array(energy), np.var, 0.95)
-	print(out[0])
-	heatCapacities.append(out[0]/(temp*temp))
+	heatCapacities.append(out[0]/(temp**2))
 	jackknifes.append(out[2])
+
+	#Flagpoint
 	print(i)
 	i += 1
 
 
-	
-	
-	# #Finds the squared average of the energies
-	# averageSquared = average(eVals[i])
-	# averageSquared = averageSquared*averageSquared
-
-	# #Finds the average of the energies squared
-	# squares = [x*x for x in eVals[i]]
-	# squaredAverage = average(squares)
-
-	# #Finds the heat capacity
-	# heatCapacity = (squaredAverage - averageSquared)/(temps[i] * temps[i])
-
-	# #Appends to the heat capacities list
-	# heatCapacities.append(heatCapacity)
-
+#Initializes a list for the theoretical values
 theoretical = []
 
+#Finds the theoritical heat capacity values
 for temp in temps2:
-	x = (1/(temp**2))*(1/m.cosh(1/temp)**2)/numSpins
+	x = (1/(numSpins*temp**2))*(1/(m.cosh(1/temp)**2))
 	theoretical.append(x)
 
 #Plots the graph

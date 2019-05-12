@@ -93,6 +93,9 @@ def plotVals(X, Y, Z):
 	#Plots the surface
 	urf = ax.plot_surface(X2, Y2, np.reshape(np.array(heatCapacities), (numSims, numSims)), cmap=mpl.cm.coolwarm,
                        linewidth=0, antialiased=False)
+	ax.set_xlabel('External Magnetic Field')
+	ax.set_ylabel('Temperature')
+	ax.set_zlabel('Heat Capacities')
 
 	#Shows the plot
 	plt.show()
